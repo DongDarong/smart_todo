@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/todo_model.dart';
@@ -5,32 +6,44 @@ import '../models/todo_model.dart';
 class SQLiteService {
   static Database? _db;
 
+  /// Get database instance (DISABLED ON WEB)
   Future<Database> get database async {
+    if (kIsWeb) {
+      throw UnsupportedError(
+        'SQLite is not supported on Web platform',
+      );
+    }
+
     _db ??= await initDB();
     return _db!;
   }
 
+  /// Initialize database
   Future<Database> initDB() async {
-    final path = join(await getDatabasesPath(), 'todo.db');
+    final String path =
+        join(await getDatabasesPath(), 'todo.db');
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2, // ⬅️ incremented because schema changed
       onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE todos(
-          id TEXT PRIMARY KEY,
-          title TEXT,
-          isDone INTEGER,
-          isSynced INTEGER,
-          updatedAt INTEGER
-        )
+            id TEXT PRIMARY KEY,
+            title TEXT,
+            isDone INTEGER,
+            isSynced INTEGER,
+            updatedAt INTEGER
+          )
         ''');
       },
     );
   }
 
+  /// Insert todo
   Future<void> insertTodo(TodoModel todo) async {
+    if (kIsWeb) return;
+
     final db = await database;
     await db.insert(
       'todos',
@@ -39,13 +52,19 @@ class SQLiteService {
     );
   }
 
+  /// Get all todos
   Future<List<TodoModel>> getTodos() async {
+    if (kIsWeb) return [];
+
     final db = await database;
     final data = await db.query('todos');
     return data.map((e) => TodoModel.fromMap(e)).toList();
   }
 
-    Future<void> updateTodo(TodoModel todo) async {
+  /// Update todo
+  Future<void> updateTodo(TodoModel todo) async {
+    if (kIsWeb) return;
+
     final db = await database;
     await db.update(
       'todos',
@@ -55,7 +74,10 @@ class SQLiteService {
     );
   }
 
+  /// Delete todo
   Future<void> deleteTodo(String id) async {
+    if (kIsWeb) return;
+
     final db = await database;
     await db.delete(
       'todos',
@@ -63,5 +85,4 @@ class SQLiteService {
       whereArgs: [id],
     );
   }
-
 }

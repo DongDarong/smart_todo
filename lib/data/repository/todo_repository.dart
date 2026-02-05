@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../local/sqlite_service.dart';
 import '../remote/firebase_service.dart';
 import '../models/todo_model.dart';
@@ -6,87 +7,96 @@ class TodoRepository {
   final SQLiteService local = SQLiteService();
   final FirebaseService remote = FirebaseService();
 
+  // ================= ADD TODO =================
   Future<void> addTodo(
-      TodoModel todo, String uid, bool isOnline) async {
-    // Always save locally first (Offline-first)
-    await local.insertTodo(todo);
+    TodoModel todo,
+    String uid,
+    bool isOnline,
+  ) async {
+    // ❌ WEB: Skip SQLite
+    if (!kIsWeb) {
+      await local.insertTodo(todo);
+    }
 
-    // Sync to cloud only if online
+    // ✅ Firebase always allowed
     if (isOnline) {
       await remote.addTodo(uid, todo);
     }
   }
 
+  // ================= LOAD TODOS =================
   Future<List<TodoModel>> loadTodos(
-      String uid, bool isOnline) async {
-    if (isOnline) {
-      // Fetch from Firebase
-      final onlineTodos = await remote.fetchTodos(uid);
+    String uid,
+    bool isOnline,
+  ) async {
+    // 🌐 WEB: Firebase only
+    if (kIsWeb) {
+      return await remote.fetchTodos(uid);
+    }
 
-      // Cache to SQLite
+    // 📱 MOBILE / DESKTOP
+    if (isOnline) {
+      final onlineTodos = await remote.fetchTodos(uid);
       for (var todo in onlineTodos) {
         await local.insertTodo(todo);
       }
       return onlineTodos;
     }
 
-    // Offline → load from SQLite
     return await local.getTodos();
   }
 
-    Future<void> updateTodo(
-      TodoModel todo, String uid, bool isOnline) async {
-    await local.updateTodo(todo);
+  // ================= UPDATE TODO =================
+  Future<void> updateTodo(
+    TodoModel todo,
+    String uid,
+    bool isOnline,
+  ) async {
+    if (!kIsWeb) {
+      await local.updateTodo(todo);
+    }
 
     if (isOnline) {
       await remote.updateTodo(uid, todo);
     }
   }
 
+  // ================= DELETE TODO =================
   Future<void> deleteTodo(
-      String id, String uid, bool isOnline) async {
-    await local.deleteTodo(id);
+    String id,
+    String uid,
+    bool isOnline,
+  ) async {
+    if (!kIsWeb) {
+      await local.deleteTodo(id);
+    }
 
     if (isOnline) {
       await remote.deleteTodo(uid, id);
     }
   }
 
-Future<void> syncTodos(String uid) async {
-  final localTodos = await local.getTodos();
+  // ================= SYNC =================
+  Future<void> syncTodos(String uid) async {
+    // ❌ WEB does not sync local DB
+    if (kIsWeb) return;
 
-  for (var localTodo in localTodos) {
-    if (!localTodo.isSynced) {
-      final remoteTodos = await remote.fetchTodos(uid);
+    final localTodos = await local.getTodos();
+    final remoteTodos = await remote.fetchTodos(uid);
 
+    for (var localTodo in localTodos) {
       final remoteTodo = remoteTodos
           .where((t) => t.id == localTodo.id)
           .toList();
 
-      if (remoteTodo.isEmpty) {
-        // No conflict → upload local
+      if (remoteTodo.isEmpty ||
+          localTodo.updatedAt >
+              remoteTodo.first.updatedAt) {
         await remote.addTodo(uid, localTodo);
-      } else {
-        // Conflict detected
-        if (localTodo.updatedAt >
-            remoteTodo.first.updatedAt) {
-          // Local is newer → overwrite remote
-          await remote.updateTodo(uid, localTodo);
-        }
+        await local.updateTodo(
+          localTodo.copyWith(isSynced: true),
+        );
       }
-
-      // Mark as synced
-      final syncedTodo = TodoModel(
-        id: localTodo.id,
-        title: localTodo.title,
-        isDone: localTodo.isDone,
-        isSynced: true,
-        updatedAt: localTodo.updatedAt,
-      );
-
-      await local.updateTodo(syncedTodo);
     }
   }
-}
-
 }
