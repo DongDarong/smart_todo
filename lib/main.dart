@@ -8,6 +8,7 @@ import 'core/notification_service.dart';
 // ViewModels
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/todo_viewmodel.dart';
+import 'viewmodels/theme_viewmodel.dart';
 
 // Pages
 import 'views/auth/login_page.dart';
@@ -40,15 +41,25 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<TodoViewModel>(
           create: (_) => TodoViewModel(),
         ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Smart Todo',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.blue,
+        ChangeNotifierProvider<ThemeViewModel>(
+          create: (_) => ThemeViewModel(),
         ),
-        home: const AuthWrapper(),
+      ],
+      child: Consumer<ThemeViewModel>(
+        builder: (context, themeVM, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Smart Todo',
+          theme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: Colors.blue,
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          ),
+          themeMode: themeVM.themeMode,
+          home: const AuthWrapper(),
+        ),
       ),
     );
   }

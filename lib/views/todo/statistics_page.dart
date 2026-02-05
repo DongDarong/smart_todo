@@ -24,8 +24,8 @@ class StatisticsPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _statCard('Total', vm.totalTodos, Colors.blue),
-                _statCard('Done', vm.completedTodos, Colors.green),
-                _statCard('Pending', vm.pendingTodos, Colors.orange),
+                _statCard('Done', vm.completedCount, Colors.green),
+                _statCard('Pending', vm.pendingCount, Colors.orange),
               ],
             ),
             const SizedBox(height: 30),
@@ -38,13 +38,13 @@ class StatisticsPage extends StatelessWidget {
                   centerSpaceRadius: 50,
                   sections: [
                     PieChartSectionData(
-                      value: vm.completedTodos.toDouble(),
+                      value: vm.completedCount.toDouble(),
                       title: 'Done',
                       color: Colors.green,
                       radius: 80,
                     ),
                     PieChartSectionData(
-                      value: vm.pendingTodos.toDouble(),
+                      value: vm.pendingCount.toDouble(),
                       title: 'Pending',
                       color: Colors.orange,
                       radius: 80,
@@ -56,7 +56,6 @@ class StatisticsPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ===== COMPLETION RATE =====
             Text(
               'Completion Rate: ${vm.completionRate.toStringAsFixed(1)}%',
               style: const TextStyle(
@@ -77,10 +76,7 @@ class StatisticsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 14),
-            ),
+            Text(title),
             const SizedBox(height: 6),
             Text(
               value.toString(),

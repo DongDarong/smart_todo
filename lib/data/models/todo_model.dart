@@ -5,15 +5,19 @@ class TodoModel {
   final bool isSynced;
   final int updatedAt;
   final DateTime? reminderTime;
+  final DateTime? dueDate;
+  final int priority;
 
-  TodoModel({
-    required this.id,
-    required this.title,
-    required this.isDone,
-    required this.isSynced,
-    required this.updatedAt,
-    this.reminderTime,
-  });
+TodoModel({
+  required this.id,
+  required this.title,
+  required this.isDone,
+  required this.isSynced,
+  required this.updatedAt,
+  this.reminderTime,
+  this.dueDate,
+  this.priority = 2,
+});
 
   // ================= COPY WITH =================
   TodoModel copyWith({
@@ -23,6 +27,8 @@ class TodoModel {
     bool? isSynced,
     int? updatedAt,
     DateTime? reminderTime,
+    DateTime? dueDate,
+    int? priority,
   }) {
     return TodoModel(
       id: id ?? this.id,
@@ -31,6 +37,8 @@ class TodoModel {
       isSynced: isSynced ?? this.isSynced,
       updatedAt: updatedAt ?? this.updatedAt,
       reminderTime: reminderTime ?? this.reminderTime,
+      dueDate: dueDate ?? this.dueDate,
+      priority: priority ?? this.priority,
     );
   }
 
@@ -43,6 +51,9 @@ class TodoModel {
       'isSynced': isSynced ? 1 : 0,
       'updatedAt': updatedAt,
       'reminderTime': reminderTime?.millisecondsSinceEpoch,
+      'dueDate': dueDate?.millisecondsSinceEpoch,
+      'priority': priority,
+
     };
   }
 
@@ -59,6 +70,11 @@ class TodoModel {
               map['reminderTime'],
             )
           : null,
+          dueDate: map['dueDate'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(map['dueDate'])
+            : null,
+        priority: map['priority'] ?? 2,
+
     );
   }
 }
