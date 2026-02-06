@@ -60,20 +60,80 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: Consumer<ThemeViewModel>(
-        builder: (context, themeVM, _) => MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Smart Todo',
-          theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: Colors.blue,
-          ),
-          darkTheme: ThemeData.dark().copyWith(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          ),
-          themeMode: themeVM.themeMode,
-          home: const AuthWrapper(),
-        ),
+        builder: (context, themeVM, _) {
+          const primaryColor = Colors.blue;
+          
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Smart Todo',
+            // --- LIGHT THEME ---
+            theme: ThemeData(
+              useMaterial3: true,
+              colorSchemeSeed: primaryColor,
+              brightness: Brightness.light,
+              appBarTheme: const AppBarTheme(
+                centerTitle: true,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+              ),
+              cardTheme: CardThemeData(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              filledButtonTheme: FilledButtonThemeData(
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+            // --- DARK THEME ---
+            darkTheme: ThemeData(
+              useMaterial3: true,
+              colorSchemeSeed: primaryColor,
+              brightness: Brightness.dark,
+              appBarTheme: const AppBarTheme(
+                centerTitle: true,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+              ),
+              cardTheme: CardThemeData(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              filledButtonTheme: FilledButtonThemeData(
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+            themeMode: themeVM.themeMode,
+            home: const AuthWrapper(),
+          );
+        },
       ),
     );
   }
@@ -109,12 +169,25 @@ class ErrorApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Initialization Error'),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Text(
-              message,
-              style: const TextStyle(fontSize: 16),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Something went wrong',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
             ),
           ),
         ),
