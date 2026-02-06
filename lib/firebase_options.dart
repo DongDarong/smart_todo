@@ -21,10 +21,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
@@ -60,4 +57,13 @@ class DefaultFirebaseOptions {
     authDomain: 'smart-todo-2026.firebaseapp.com',
     storageBucket: 'smart-todo-2026.firebasestorage.app',
   );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyDJvJ06lvxcV3xU7dv_7M2kvEIbQhBfvxA',
+    appId: '1:498815570387:android:5e32b150081ef90faa5f26',
+    messagingSenderId: '498815570387',
+    projectId: 'smart-todo-2026',
+    storageBucket: 'smart-todo-2026.firebasestorage.app',
+  );
+
 }

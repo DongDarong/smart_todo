@@ -298,37 +298,65 @@ class _HomePageState extends State<HomePage> {
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (todo.dueDate != null) ...[
-                            Icon(
-                              Icons.calendar_today_outlined,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 4),
+                          if (todo.description != null &&
+                              todo.description!.isNotEmpty) ...[
                             Text(
-                              todo.dueDate!.toLocal().toString().split(' ')[0],
-                              style: theme.textTheme.bodySmall,
+                              todo.description!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(height: 8),
                           ],
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: priorityColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            todo.priority == 1
-                                ? 'Low'
-                                : todo.priority == 2
-                                ? 'Medium'
-                                : 'High',
-                            style: theme.textTheme.bodySmall,
+                          Row(
+                            children: [
+                              if (todo.dueDate != null) ...[
+                                Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 14,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  todo.dueDate!.toLocal().toString().split(
+                                    ' ',
+                                  )[0],
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                const SizedBox(width: 12),
+                              ],
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: priorityColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                todo.priority == 1
+                                    ? 'Low'
+                                    : todo.priority == 2
+                                    ? 'Medium'
+                                    : 'High',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                              if (todo.reminderTime != null) ...[
+                                const SizedBox(width: 12),
+                                const Icon(Icons.alarm_outlined, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  todo.reminderTime!.toLocal().toString(),
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ],
+                            ],
                           ),
                         ],
                       ),
@@ -362,7 +390,9 @@ class _HomePageState extends State<HomePage> {
   // =========================================================
   void _showAddTodoDialog(BuildContext context, TodoViewModel vm) {
     final TextEditingController controller = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
     DateTime? dueDate;
+    DateTime? reminderTime;
     int priority = 2;
 
     showDialog(
@@ -384,6 +414,17 @@ class _HomePageState extends State<HomePage> {
                 autofocus: true,
                 decoration: InputDecoration(
                   labelText: 'Task Title',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Description (optional)',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -431,6 +472,43 @@ class _HomePageState extends State<HomePage> {
                   if (picked != null) setDialogState(() => dueDate = picked);
                 },
               ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.alarm_outlined),
+                label: Text(
+                  reminderTime == null
+                      ? 'Set Reminder'
+                      : reminderTime!.toLocal().toString(),
+                ),
+                onPressed: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2100),
+                    initialDate: DateTime.now(),
+                  );
+                  if (pickedDate == null) return;
+                  final pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(DateTime.now()),
+                  );
+                  if (pickedTime == null) return;
+                  final combined = DateTime(
+                    pickedDate.year,
+                    pickedDate.month,
+                    pickedDate.day,
+                    pickedTime.hour,
+                    pickedTime.minute,
+                  );
+                  setDialogState(() => reminderTime = combined);
+                },
+              ),
             ],
           ),
           actions: [
@@ -444,7 +522,11 @@ class _HomePageState extends State<HomePage> {
                   vm.addTodo(
                     controller.text.trim(),
                     widget.uid,
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
                     dueDate: dueDate,
+                    reminderTime: reminderTime,
                     priority: priority,
                   );
                   Navigator.pop(context);
@@ -469,7 +551,11 @@ class _HomePageState extends State<HomePage> {
     final TextEditingController controller = TextEditingController(
       text: todo.title,
     );
+    final TextEditingController descriptionController = TextEditingController(
+      text: todo.description ?? '',
+    );
     DateTime? dueDate = todo.dueDate;
+    DateTime? reminderTime = todo.reminderTime;
     int priority = todo.priority;
 
     showDialog(
@@ -490,6 +576,17 @@ class _HomePageState extends State<HomePage> {
                 controller: controller,
                 decoration: InputDecoration(
                   labelText: 'Task Title',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Description (optional)',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -537,6 +634,45 @@ class _HomePageState extends State<HomePage> {
                   if (picked != null) setDialogState(() => dueDate = picked);
                 },
               ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.alarm_outlined),
+                label: Text(
+                  reminderTime == null
+                      ? 'Set Reminder'
+                      : reminderTime!.toLocal().toString(),
+                ),
+                onPressed: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                    initialDate: reminderTime ?? DateTime.now(),
+                  );
+                  if (pickedDate == null) return;
+                  final pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(
+                      reminderTime ?? DateTime.now(),
+                    ),
+                  );
+                  if (pickedTime == null) return;
+                  final combined = DateTime(
+                    pickedDate.year,
+                    pickedDate.month,
+                    pickedDate.day,
+                    pickedTime.hour,
+                    pickedTime.minute,
+                  );
+                  setDialogState(() => reminderTime = combined);
+                },
+              ),
             ],
           ),
           actions: [
@@ -551,7 +687,11 @@ class _HomePageState extends State<HomePage> {
                     todo,
                     widget.uid,
                     newTitle: controller.text.trim(),
+                    newDescription: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
                     newDueDate: dueDate,
+                    newReminderTime: reminderTime,
                     newPriority: priority,
                   );
                   Navigator.pop(context);

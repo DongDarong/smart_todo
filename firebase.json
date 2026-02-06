@@ -1,1 +1,1 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"smart-todo-2026","configurations":{"web":"1:498815570387:web:6bfc2efc97f7dab4aa5f26"}}}}}}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"smart-todo-2026","appId":"1:498815570387:android:5e32b150081ef90faa5f26","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"smart-todo-2026","configurations":{"android":"1:498815570387:android:5e32b150081ef90faa5f26","web":"1:498815570387:web:6bfc2efc97f7dab4aa5f26"}}}}}}
