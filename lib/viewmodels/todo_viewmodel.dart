@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -10,6 +12,8 @@ enum TodoStatusFilter { all, completed, pending }
 
 class TodoViewModel extends ChangeNotifier {
   final TodoRepository repo = TodoRepository();
+
+  StreamSubscription<ConnectivityResult>? _connectivitySub;
 
   List<TodoModel> todos = [];
 
@@ -223,6 +227,28 @@ class TodoViewModel extends ChangeNotifier {
       await repo.syncTodos(uid);
       await loadTodos(uid);
     }
+  }
+
+  /// Start automatic sync when connectivity is regained. Call with the current `uid`.
+  void startAutoSync(String uid) {
+    _connectivitySub?.cancel();
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((result) {
+      if (result != ConnectivityResult.none) {
+        syncIfOnline(uid);
+      }
+    });
+  }
+
+  /// Stop automatic sync listener.
+  void stopAutoSync() {
+    _connectivitySub?.cancel();
+    _connectivitySub = null;
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub?.cancel();
+    super.dispose();
   }
 
   // =========================================================

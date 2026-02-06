@@ -28,6 +28,13 @@ Smart Todo is an offline-first, cross-platform todo application built with **Flu
 - `lib/core/notification_service.dart` — Local notification initialization and scheduling.
 - `lib/views/` — UI pages: `auth` (login/register), `todo/home_page.dart`, `todo/statistics_page.dart`.
 
+Recent changes:
+- Updated UI styling across auth and todo pages: centered cards, improved input styles, rounded dialogs, and refreshed list cards.
+- Replaced some deprecated `TextTheme` getters to match current Flutter theming APIs.
+
+Troubleshooting:
+- If you see an analyzer error complaining about `package:flutter_lints/flutter.yaml` not found, open `analysis_options.yaml` and either add `flutter_lints` to `dev_dependencies` or comment out the `include:` line. This repo comments the include by default to avoid analyzer failures when the package isn't installed.
+
 State management is handled with **Provider** + **ChangeNotifier**.
 
 ---
