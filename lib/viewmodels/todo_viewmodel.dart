@@ -136,6 +136,7 @@ class TodoViewModel extends ChangeNotifier {
   Future<void> addTodo(
     String title,
     String uid, {
+    String? description,
     DateTime? dueDate,
     DateTime? reminderTime,
     int priority = 2, // 1=Low, 2=Medium, 3=High
@@ -146,6 +147,7 @@ class TodoViewModel extends ChangeNotifier {
     final TodoModel todo = TodoModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
+      description: description,
       isDone: false,
       isSynced: isOnline,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -176,6 +178,7 @@ class TodoViewModel extends ChangeNotifier {
     TodoModel todo,
     String uid, {
     String? newTitle,
+    String? newDescription,
     DateTime? newDueDate,
     int? newPriority,
     DateTime? newReminderTime,
@@ -193,6 +196,7 @@ class TodoViewModel extends ChangeNotifier {
 
     final TodoModel updatedTodo = todo.copyWith(
       title: newTitle ?? todo.title,
+      description: newDescription ?? todo.description,
       dueDate: newDueDate ?? todo.dueDate,
       priority: newPriority ?? todo.priority,
       reminderTime: finalReminderTime,

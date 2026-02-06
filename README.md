@@ -22,8 +22,8 @@ Smart Todo is an offline-first, cross-platform todo application built with **Flu
 ## Architecture & Code Overview 🏗️
 
 - `lib/main.dart` — App bootstrap: initializes Firebase and notifications, sets up `Provider` graph, and routes through `AuthWrapper`.
-- `lib/data/models/todo_model.dart` — `TodoModel` with fields for title, priority, due date, reminder time, and sync status; includes serialization helpers.
-- `lib/data/local/sqlite_service.dart` — Local DB (v3 schema) with CRUD operations, migration support for upgrades.
+- `lib/data/models/todo_model.dart` — `TodoModel` with fields for title, description, priority, due date, reminder time, and sync status; includes serialization helpers.
+- `lib/data/local/sqlite_service.dart` — Local DB (v4 schema) with CRUD operations, migration support for upgrades.
 - `lib/data/local/pending_operations.dart` — Persists pending deletes (via `SharedPreferences`) for offline sync queuing.
 - `lib/data/remote/firebase_service.dart` — Firestore CRUD operations on `users/{uid}/todos/{todoId}` collection.
 - `lib/data/repository/todo_repository.dart` — Repository pattern:

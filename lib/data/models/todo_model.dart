@@ -1,6 +1,7 @@
 class TodoModel {
   final String id;
   final String title;
+  final String? description;
   final bool isDone;
   final bool isSynced;
   final int updatedAt;
@@ -11,6 +12,7 @@ class TodoModel {
   TodoModel({
     required this.id,
     required this.title,
+    this.description,
     required this.isDone,
     required this.isSynced,
     required this.updatedAt,
@@ -23,6 +25,7 @@ class TodoModel {
   TodoModel copyWith({
     String? id,
     String? title,
+    String? description,
     bool? isDone,
     bool? isSynced,
     int? updatedAt,
@@ -33,6 +36,7 @@ class TodoModel {
     return TodoModel(
       id: id ?? this.id,
       title: title ?? this.title,
+      description: description ?? this.description,
       isDone: isDone ?? this.isDone,
       isSynced: isSynced ?? this.isSynced,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -47,6 +51,7 @@ class TodoModel {
     return {
       'id': id,
       'title': title,
+      'description': description,
       'isDone': isDone ? 1 : 0,
       'isSynced': isSynced ? 1 : 0,
       'updatedAt': updatedAt,
@@ -61,6 +66,7 @@ class TodoModel {
     return TodoModel(
       id: map['id'] as String,
       title: map['title'] as String,
+      description: map['description'] as String?,
       isDone: map['isDone'] == 1 || map['isDone'] == true,
       isSynced: map['isSynced'] == 1 || map['isSynced'] == true,
       updatedAt: (map['updatedAt'] ?? 0) as int,

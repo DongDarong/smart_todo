@@ -22,12 +22,13 @@ class SQLiteService {
 
     return openDatabase(
       path,
-      version: 3, // ⬅️ incremented for reminder fields
+      version: 4, // ⬅️ incremented for description field
       onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE todos(
             id TEXT PRIMARY KEY,
             title TEXT,
+            description TEXT,
             isDone INTEGER,
             isSynced INTEGER,
             updatedAt INTEGER,
@@ -45,6 +46,10 @@ class SQLiteService {
           await db.execute(
             'ALTER TABLE todos ADD COLUMN priority INTEGER DEFAULT 2',
           );
+        }
+        if (oldVersion < 4) {
+          // Add description column for version 4
+          await db.execute('ALTER TABLE todos ADD COLUMN description TEXT');
         }
       },
     );
