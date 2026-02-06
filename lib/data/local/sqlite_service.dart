@@ -9,9 +9,7 @@ class SQLiteService {
   /// Get database instance (DISABLED ON WEB)
   Future<Database> get database async {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'SQLite is not supported on Web platform',
-      );
+      throw UnsupportedError('SQLite is not supported on Web platform');
     }
 
     _db ??= await initDB();
@@ -20,12 +18,11 @@ class SQLiteService {
 
   /// Initialize database
   Future<Database> initDB() async {
-    final String path =
-        join(await getDatabasesPath(), 'todo.db');
+    final String path = join(await getDatabasesPath(), 'todo.db');
 
     return openDatabase(
       path,
-      version: 2, // ⬅️ incremented because schema changed
+      version: 3, // ⬅️ incremented for reminder fields
       onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE todos(
@@ -33,9 +30,22 @@ class SQLiteService {
             title TEXT,
             isDone INTEGER,
             isSynced INTEGER,
-            updatedAt INTEGER
+            updatedAt INTEGER,
+            reminderTime INTEGER,
+            dueDate INTEGER,
+            priority INTEGER
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 3) {
+          // Add missing columns for versions < 3
+          await db.execute('ALTER TABLE todos ADD COLUMN reminderTime INTEGER');
+          await db.execute('ALTER TABLE todos ADD COLUMN dueDate INTEGER');
+          await db.execute(
+            'ALTER TABLE todos ADD COLUMN priority INTEGER DEFAULT 2',
+          );
+        }
       },
     );
   }
@@ -79,10 +89,6 @@ class SQLiteService {
     if (kIsWeb) return;
 
     final db = await database;
-    await db.delete(
-      'todos',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('todos', where: 'id = ?', whereArgs: [id]);
   }
 }

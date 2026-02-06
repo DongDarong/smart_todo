@@ -49,20 +49,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthViewModel>(
-          create: (_) => AuthViewModel(),
-        ),
-        ChangeNotifierProvider<TodoViewModel>(
-          create: (_) => TodoViewModel(),
-        ),
-        ChangeNotifierProvider<ThemeViewModel>(
-          create: (_) => ThemeViewModel(),
-        ),
+        ChangeNotifierProvider<AuthViewModel>(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider<TodoViewModel>(create: (_) => TodoViewModel()),
+        ChangeNotifierProvider<ThemeViewModel>(create: (_) => ThemeViewModel()),
       ],
       child: Consumer<ThemeViewModel>(
         builder: (context, themeVM, _) {
           const primaryColor = Colors.blue;
-          
+
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Smart Todo',
@@ -88,7 +82,10 @@ class MyApp extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
               ),
               filledButtonTheme: FilledButtonThemeData(
                 style: FilledButton.styleFrom(
@@ -120,7 +117,10 @@ class MyApp extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
               ),
               filledButtonTheme: FilledButtonThemeData(
                 style: FilledButton.styleFrom(
@@ -166,9 +166,7 @@ class ErrorApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Initialization Error'),
-        ),
+        appBar: AppBar(title: const Text('Initialization Error')),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -179,7 +177,9 @@ class ErrorApp extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'Something went wrong',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(

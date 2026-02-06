@@ -11,14 +11,25 @@ class ThemeViewModel extends ChangeNotifier {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString('themeMode') ?? 'system';
-    themeMode = saved == 'dark' ? ThemeMode.dark : saved == 'light' ? ThemeMode.light : ThemeMode.system;
+    themeMode = saved == 'dark'
+        ? ThemeMode.dark
+        : saved == 'light'
+        ? ThemeMode.light
+        : ThemeMode.system;
     notifyListeners();
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     themeMode = mode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('themeMode', mode == ThemeMode.dark ? 'dark' : mode == ThemeMode.light ? 'light' : 'system');
+    await prefs.setString(
+      'themeMode',
+      mode == ThemeMode.dark
+          ? 'dark'
+          : mode == ThemeMode.light
+          ? 'light'
+          : 'system',
+    );
     notifyListeners();
   }
 

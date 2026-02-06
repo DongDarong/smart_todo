@@ -8,16 +8,16 @@ class TodoModel {
   final DateTime? dueDate;
   final int priority;
 
-TodoModel({
-  required this.id,
-  required this.title,
-  required this.isDone,
-  required this.isSynced,
-  required this.updatedAt,
-  this.reminderTime,
-  this.dueDate,
-  this.priority = 2,
-});
+  TodoModel({
+    required this.id,
+    required this.title,
+    required this.isDone,
+    required this.isSynced,
+    required this.updatedAt,
+    this.reminderTime,
+    this.dueDate,
+    this.priority = 2,
+  });
 
   // ================= COPY WITH =================
   TodoModel copyWith({
@@ -53,7 +53,6 @@ TodoModel({
       'reminderTime': reminderTime?.millisecondsSinceEpoch,
       'dueDate': dueDate?.millisecondsSinceEpoch,
       'priority': priority,
-
     };
   }
 
@@ -64,17 +63,14 @@ TodoModel({
       title: map['title'] as String,
       isDone: map['isDone'] == 1 || map['isDone'] == true,
       isSynced: map['isSynced'] == 1 || map['isSynced'] == true,
-      updatedAt: map['updatedAt'] as int,
+      updatedAt: (map['updatedAt'] ?? 0) as int,
       reminderTime: map['reminderTime'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              map['reminderTime'],
-            )
+          ? DateTime.fromMillisecondsSinceEpoch(map['reminderTime'] as int)
           : null,
-          dueDate: map['dueDate'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(map['dueDate'])
-            : null,
-        priority: map['priority'] ?? 2,
-
+      dueDate: map['dueDate'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['dueDate'] as int)
+          : null,
+      priority: (map['priority'] ?? 2) as int,
     );
   }
 }

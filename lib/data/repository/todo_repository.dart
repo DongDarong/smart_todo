@@ -10,11 +10,7 @@ class TodoRepository {
   final PendingOperationsService pending = PendingOperationsService();
 
   // ================= ADD TODO =================
-  Future<void> addTodo(
-    TodoModel todo,
-    String uid,
-    bool isOnline,
-  ) async {
+  Future<void> addTodo(TodoModel todo, String uid, bool isOnline) async {
     // ❌ WEB: Skip SQLite
     if (!kIsWeb) {
       await local.insertTodo(todo);
@@ -27,10 +23,7 @@ class TodoRepository {
   }
 
   // ================= LOAD TODOS =================
-  Future<List<TodoModel>> loadTodos(
-    String uid,
-    bool isOnline,
-  ) async {
+  Future<List<TodoModel>> loadTodos(String uid, bool isOnline) async {
     // 🌐 WEB: Firebase only
     if (kIsWeb) {
       return await remote.fetchTodos(uid);
@@ -49,11 +42,7 @@ class TodoRepository {
   }
 
   // ================= UPDATE TODO =================
-  Future<void> updateTodo(
-    TodoModel todo,
-    String uid,
-    bool isOnline,
-  ) async {
+  Future<void> updateTodo(TodoModel todo, String uid, bool isOnline) async {
     if (!kIsWeb) {
       await local.updateTodo(todo);
     }
@@ -64,11 +53,7 @@ class TodoRepository {
   }
 
   // ================= DELETE TODO =================
-  Future<void> deleteTodo(
-    String id,
-    String uid,
-    bool isOnline,
-  ) async {
+  Future<void> deleteTodo(String id, String uid, bool isOnline) async {
     if (!kIsWeb) {
       await local.deleteTodo(id);
     }
@@ -100,14 +85,14 @@ class TodoRepository {
     final localTodos = await local.getTodos();
     final remoteTodos = await remote.fetchTodos(uid);
 
-    final Map<String, TodoModel> localMap = {
-      for (var t in localTodos) t.id: t,
-    };
+    final Map<String, TodoModel> localMap = {for (var t in localTodos) t.id: t};
     final Map<String, TodoModel> remoteMap = {
       for (var t in remoteTodos) t.id: t,
     };
 
-    final allIds = <String>{}..addAll(localMap.keys)..addAll(remoteMap.keys);
+    final allIds = <String>{}
+      ..addAll(localMap.keys)
+      ..addAll(remoteMap.keys);
 
     for (final id in allIds) {
       final localTodo = localMap[id];

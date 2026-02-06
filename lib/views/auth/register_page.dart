@@ -23,7 +23,10 @@ class _RegisterPageState extends State<RegisterPage> {
       // Extend body behind AppBar for a seamless background look
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Register', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Register',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -108,7 +111,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outlineVariant,
+                                  ),
                                 ),
                               ),
                             ),
@@ -125,7 +130,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outlineVariant,
+                                  ),
                                 ),
                               ),
                             ),
@@ -158,7 +165,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               },
                               child: const Text(
                                 'Register',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],

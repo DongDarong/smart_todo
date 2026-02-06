@@ -25,7 +25,10 @@ class _LoginPageState extends State<LoginPage> {
       // Extend body behind AppBar for a seamless background look
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Login', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Login',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -110,7 +113,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outlineVariant,
+                                  ),
                                 ),
                               ),
                             ),
@@ -127,7 +132,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outlineVariant,
+                                  ),
                                 ),
                               ),
                             ),
@@ -149,7 +156,8 @@ class _LoginPageState extends State<LoginPage> {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => HomePage(uid: authVM.uid!),
+                                      builder: (_) =>
+                                          HomePage(uid: authVM.uid!),
                                     ),
                                   );
                                 } else {
@@ -165,7 +173,10 @@ class _LoginPageState extends State<LoginPage> {
                               },
                               child: const Text(
                                 'Login',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],

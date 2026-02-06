@@ -69,18 +69,28 @@ class TodoViewModel extends ChangeNotifier {
   List<TodoModel> applyFilters(List<TodoModel> list) {
     return list.where((t) {
       // Search
-      if (searchQuery.isNotEmpty && !t.title.toLowerCase().contains(searchQuery.toLowerCase())) return false;
+      if (searchQuery.isNotEmpty &&
+          !t.title.toLowerCase().contains(searchQuery.toLowerCase()))
+        return false;
       // Status
       if (statusFilter == TodoStatusFilter.completed && !t.isDone) return false;
       if (statusFilter == TodoStatusFilter.pending && t.isDone) return false;
       // Priority
-      if (priorityFilters.isNotEmpty && !priorityFilters.contains(t.priority)) return false;
+      if (priorityFilters.isNotEmpty && !priorityFilters.contains(t.priority))
+        return false;
       // Date range
       if ((dateFrom != null || dateTo != null)) {
-        if (t.dueDate == null) return false; // exclude if filtering by date but todo has no due date
+        if (t.dueDate == null)
+          return false; // exclude if filtering by date but todo has no due date
         final due = DateTime(t.dueDate!.year, t.dueDate!.month, t.dueDate!.day);
-        if (dateFrom != null && due.isBefore(DateTime(dateFrom!.year, dateFrom!.month, dateFrom!.day))) return false;
-        if (dateTo != null && due.isAfter(DateTime(dateTo!.year, dateTo!.month, dateTo!.day))) return false;
+        if (dateFrom != null &&
+            due.isBefore(
+              DateTime(dateFrom!.year, dateFrom!.month, dateFrom!.day),
+            ))
+          return false;
+        if (dateTo != null &&
+            due.isAfter(DateTime(dateTo!.year, dateTo!.month, dateTo!.day)))
+          return false;
       }
       return true;
     }).toList();
@@ -88,18 +98,36 @@ class TodoViewModel extends ChangeNotifier {
 
   // =========================================================
   // LOAD TODOS
-
-
-  // =========================================================
-  // LOAD TODOS
   // =========================================================
   Future<void> loadTodos(String uid) async {
     final bool isOnline =
-        await Connectivity().checkConnectivity() !=
-            ConnectivityResult.none;
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
 
     todos = await repo.loadTodos(uid, isOnline);
+
+    // Reschedule all reminders for todos with reminder times in the future
+    await _rescheduleReminders();
+
     notifyListeners();
+  }
+
+  /// Reschedule reminders for all todos with future reminder times
+  Future<void> _rescheduleReminders() async {
+    final now = DateTime.now();
+    for (final todo in todos) {
+      if (todo.reminderTime != null && todo.reminderTime!.isAfter(now)) {
+        try {
+          await NotificationService.scheduleNotification(
+            id: int.parse(todo.id),
+            title: 'Todo Reminder',
+            body: todo.title,
+            scheduledTime: todo.reminderTime!,
+          );
+        } catch (_) {
+          // Silently ignore scheduling errors
+        }
+      }
+    }
   }
 
   // =========================================================
@@ -113,8 +141,7 @@ class TodoViewModel extends ChangeNotifier {
     int priority = 2, // 1=Low, 2=Medium, 3=High
   }) async {
     final bool isOnline =
-        await Connectivity().checkConnectivity() !=
-            ConnectivityResult.none;
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
 
     final TodoModel todo = TodoModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -151,18 +178,49 @@ class TodoViewModel extends ChangeNotifier {
     String? newTitle,
     DateTime? newDueDate,
     int? newPriority,
+    DateTime? newReminderTime,
   }) async {
     final bool isOnline =
-        await Connectivity().checkConnectivity() !=
-            ConnectivityResult.none;
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
+
+    // Determine final reminder time (use new value, or keep old, or null)
+    DateTime? finalReminderTime;
+    if (newReminderTime != null) {
+      finalReminderTime = newReminderTime;
+    } else if (todo.reminderTime != null) {
+      finalReminderTime = todo.reminderTime;
+    }
 
     final TodoModel updatedTodo = todo.copyWith(
       title: newTitle ?? todo.title,
       dueDate: newDueDate ?? todo.dueDate,
       priority: newPriority ?? todo.priority,
+      reminderTime: finalReminderTime,
       isSynced: isOnline,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
     );
+
+    // Cancel old reminder if it exists
+    try {
+      await NotificationService.cancelNotification(int.parse(todo.id));
+    } catch (_) {
+      // Ignore errors
+    }
+
+    // Schedule new reminder if needed
+    if (finalReminderTime != null &&
+        finalReminderTime.isAfter(DateTime.now())) {
+      try {
+        await NotificationService.scheduleNotification(
+          id: int.parse(updatedTodo.id),
+          title: 'Todo Reminder',
+          body: updatedTodo.title,
+          scheduledTime: finalReminderTime,
+        );
+      } catch (_) {
+        // Ignore errors
+      }
+    }
 
     await repo.updateTodo(updatedTodo, uid, isOnline);
 
@@ -176,13 +234,9 @@ class TodoViewModel extends ChangeNotifier {
   // =========================================================
   // TOGGLE DONE
   // =========================================================
-  Future<void> toggleDone(
-    TodoModel todo,
-    String uid,
-  ) async {
+  Future<void> toggleDone(TodoModel todo, String uid) async {
     final bool isOnline =
-        await Connectivity().checkConnectivity() !=
-            ConnectivityResult.none;
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
 
     final TodoModel updatedTodo = todo.copyWith(
       isDone: !todo.isDone,
@@ -202,13 +256,16 @@ class TodoViewModel extends ChangeNotifier {
   // =========================================================
   // DELETE TODO
   // =========================================================
-  Future<void> deleteTodo(
-    String id,
-    String uid,
-  ) async {
+  Future<void> deleteTodo(String id, String uid) async {
     final bool isOnline =
-        await Connectivity().checkConnectivity() !=
-            ConnectivityResult.none;
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
+
+    // Cancel associated notification if any
+    try {
+      await NotificationService.cancelNotification(int.parse(id));
+    } catch (_) {
+      // Ignore errors
+    }
 
     await repo.deleteTodo(id, uid, isOnline);
     todos.removeWhere((t) => t.id == id);
@@ -220,8 +277,7 @@ class TodoViewModel extends ChangeNotifier {
   // =========================================================
   Future<void> syncIfOnline(String uid) async {
     final bool isOnline =
-        await Connectivity().checkConnectivity() !=
-            ConnectivityResult.none;
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
 
     if (isOnline) {
       await repo.syncTodos(uid);
@@ -256,11 +312,9 @@ class TodoViewModel extends ChangeNotifier {
   // =========================================================
   int get totalTodos => todos.length;
 
-  int get completedCount =>
-      todos.where((t) => t.isDone).length;
+  int get completedCount => todos.where((t) => t.isDone).length;
 
-  int get pendingCount =>
-      todos.where((t) => !t.isDone).length;
+  int get pendingCount => todos.where((t) => !t.isDone).length;
 
   double get completionRate {
     if (todos.isEmpty) return 0;
@@ -277,11 +331,7 @@ class TodoViewModel extends ChangeNotifier {
   List<TodoModel> get todayTodos {
     return todos.where((t) {
       if (t.isDone || t.dueDate == null) return false;
-      final d = DateTime(
-        t.dueDate!.year,
-        t.dueDate!.month,
-        t.dueDate!.day,
-      );
+      final d = DateTime(t.dueDate!.year, t.dueDate!.month, t.dueDate!.day);
       return d == _today;
     }).toList();
   }

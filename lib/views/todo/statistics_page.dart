@@ -59,7 +59,10 @@ class _HomePageState extends State<HomePage> {
                   style: const TextStyle(fontSize: 16),
                   onChanged: (v) => vm.setSearchQuery(v),
                 )
-              : const Text('Smart Todo', style: TextStyle(fontWeight: FontWeight.bold)),
+              : const Text(
+                  'Smart Todo',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
           actions: [
             IconButton(
               icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -127,7 +130,10 @@ class _HomePageState extends State<HomePage> {
                   vm.dateFrom != null ||
                   vm.dateTo != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -144,17 +150,22 @@ class _HomePageState extends State<HomePage> {
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: Chip(
-                              label: Text(vm.statusFilter == TodoStatusFilter.completed
-                                  ? 'Status: Completed'
-                                  : 'Status: Pending'),
-                              onDeleted: () => vm.setStatusFilter(TodoStatusFilter.all),
+                              label: Text(
+                                vm.statusFilter == TodoStatusFilter.completed
+                                    ? 'Status: Completed'
+                                    : 'Status: Pending',
+                              ),
+                              onDeleted: () =>
+                                  vm.setStatusFilter(TodoStatusFilter.all),
                             ),
                           ),
                         if (vm.priorityFilters.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: Chip(
-                              label: Text('Priority: ${vm.priorityFilters.join(', ')}'),
+                              label: Text(
+                                'Priority: ${vm.priorityFilters.join(', ')}',
+                              ),
                               onDeleted: () => vm.setPriorityFilters({}),
                             ),
                           ),
@@ -210,15 +221,26 @@ class _HomePageState extends State<HomePage> {
                   color: colorScheme.primary.withOpacity(0.05),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.inbox_outlined, size: 64, color: colorScheme.primary.withOpacity(0.5)),
+                child: Icon(
+                  Icons.inbox_outlined,
+                  size: 64,
+                  color: colorScheme.primary.withOpacity(0.5),
+                ),
               ),
               const SizedBox(height: 16),
-              Text('No tasks found', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'No tasks found',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Text(
                 'Try adjusting your filters or add a new task to get started.',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -236,8 +258,8 @@ class _HomePageState extends State<HomePage> {
         final priorityColor = todo.priority == 3
             ? Colors.red
             : todo.priority == 2
-                ? Colors.orange
-                : Colors.green;
+            ? Colors.orange
+            : Colors.green;
 
         return Center(
           child: ConstrainedBox(
@@ -248,7 +270,9 @@ class _HomePageState extends State<HomePage> {
               color: colorScheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+                side: BorderSide(
+                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                ),
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(20),
@@ -260,16 +284,24 @@ class _HomePageState extends State<HomePage> {
                       scale: 1.2,
                       child: Checkbox(
                         value: todo.isDone,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                         onChanged: (_) => vm.toggleDone(todo, widget.uid),
                       ),
                     ),
                     title: Text(
                       todo.title,
                       style: TextStyle(
-                        decoration: todo.isDone ? TextDecoration.lineThrough : null,
-                        color: todo.isDone ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
-                        fontWeight: todo.priority == 3 ? FontWeight.bold : FontWeight.w500,
+                        decoration: todo.isDone
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: todo.isDone
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.onSurface,
+                        fontWeight: todo.priority == 3
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         fontSize: 16,
                       ),
                     ),
@@ -278,7 +310,11 @@ class _HomePageState extends State<HomePage> {
                       child: Row(
                         children: [
                           if (todo.dueDate != null) ...[
-                            Icon(Icons.calendar_today_outlined, size: 14, color: colorScheme.onSurfaceVariant),
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               todo.dueDate!.toLocal().toString().split(' ')[0],
@@ -289,11 +325,18 @@ class _HomePageState extends State<HomePage> {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: BoxDecoration(color: priorityColor, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: priorityColor,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            todo.priority == 1 ? 'Low' : todo.priority == 2 ? 'Medium' : 'High',
+                            todo.priority == 1
+                                ? 'Low'
+                                : todo.priority == 2
+                                ? 'Medium'
+                                : 'High',
                             style: theme.textTheme.bodySmall,
                           ),
                         ],
@@ -335,8 +378,13 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Text('New Task', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: const Text(
+            'New Task',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -345,7 +393,9 @@ class _HomePageState extends State<HomePage> {
                 autofocus: true,
                 decoration: InputDecoration(
                   labelText: 'Task Title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -353,7 +403,9 @@ class _HomePageState extends State<HomePage> {
                 value: priority,
                 decoration: InputDecoration(
                   labelText: 'Priority',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 items: const [
                   DropdownMenuItem(value: 1, child: Text('Low')),
@@ -368,10 +420,16 @@ class _HomePageState extends State<HomePage> {
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 icon: const Icon(Icons.calendar_today_outlined),
-                label: Text(dueDate == null ? 'Set Due Date' : dueDate!.toLocal().toString().split(' ')[0]),
+                label: Text(
+                  dueDate == null
+                      ? 'Set Due Date'
+                      : dueDate!.toLocal().toString().split(' ')[0],
+                ),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -412,8 +470,14 @@ class _HomePageState extends State<HomePage> {
   // =========================================================
   // EDIT TODO
   // =========================================================
-  void _showEditTodoDialog(BuildContext context, TodoViewModel vm, TodoModel todo) {
-    final TextEditingController controller = TextEditingController(text: todo.title);
+  void _showEditTodoDialog(
+    BuildContext context,
+    TodoViewModel vm,
+    TodoModel todo,
+  ) {
+    final TextEditingController controller = TextEditingController(
+      text: todo.title,
+    );
     DateTime? dueDate = todo.dueDate;
     int priority = todo.priority;
 
@@ -421,8 +485,13 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Text('Edit Task', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: const Text(
+            'Edit Task',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -430,7 +499,9 @@ class _HomePageState extends State<HomePage> {
                 controller: controller,
                 decoration: InputDecoration(
                   labelText: 'Task Title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -438,7 +509,9 @@ class _HomePageState extends State<HomePage> {
                 value: priority,
                 decoration: InputDecoration(
                   labelText: 'Priority',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 items: const [
                   DropdownMenuItem(value: 1, child: Text('Low')),
@@ -453,10 +526,16 @@ class _HomePageState extends State<HomePage> {
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 icon: const Icon(Icons.calendar_today_outlined),
-                label: Text(dueDate == null ? 'Set Due Date' : dueDate!.toLocal().toString().split(' ')[0]),
+                label: Text(
+                  dueDate == null
+                      ? 'Set Due Date'
+                      : dueDate!.toLocal().toString().split(' ')[0],
+                ),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -504,11 +583,18 @@ class _HomePageState extends State<HomePage> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this task? This action cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () {
               vm.deleteTodo(id, widget.uid);
               Navigator.pop(context);
@@ -545,13 +631,24 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Filter Tasks', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                  Text(
+                    'Filter Tasks',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
                 ],
               ),
               const Divider(),
               const SizedBox(height: 16),
-              const Text('Status', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Status',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -568,22 +665,38 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Priority', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Priority',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               Row(
                 children: [
                   for (final p in [1, 2, 3])
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: FilterChip(
-                        label: Text(p == 1 ? 'Low' : p == 2 ? 'Medium' : 'High'),
+                        label: Text(
+                          p == 1
+                              ? 'Low'
+                              : p == 2
+                              ? 'Medium'
+                              : 'High',
+                        ),
                         selected: selectedPriorities.contains(p),
-                        onSelected: (sel) => setState(() => sel ? selectedPriorities.add(p) : selectedPriorities.remove(p)),
+                        onSelected: (sel) => setState(
+                          () => sel
+                              ? selectedPriorities.add(p)
+                              : selectedPriorities.remove(p),
+                        ),
                       ),
                     ),
                 ],
               ),
               const SizedBox(height: 20),
-              const Text('Date Range', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Date Range',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -598,10 +711,17 @@ class _HomePageState extends State<HomePage> {
                         );
                         if (picked != null) setState(() => from = picked);
                       },
-                      child: Text(from != null ? from!.toLocal().toString().split(' ')[0] : 'From'),
+                      child: Text(
+                        from != null
+                            ? from!.toLocal().toString().split(' ')[0]
+                            : 'From',
+                      ),
                     ),
                   ),
-                  const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Icon(Icons.arrow_forward, size: 16)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Icon(Icons.arrow_forward, size: 16),
+                  ),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
@@ -613,7 +733,11 @@ class _HomePageState extends State<HomePage> {
                         );
                         if (picked != null) setState(() => to = picked);
                       },
-                      child: Text(to != null ? to!.toLocal().toString().split(' ')[0] : 'To'),
+                      child: Text(
+                        to != null
+                            ? to!.toLocal().toString().split(' ')[0]
+                            : 'To',
+                      ),
                     ),
                   ),
                 ],
@@ -660,11 +784,18 @@ class _HomePageState extends State<HomePage> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout from your account?'),
+        content: const Text(
+          'Are you sure you want to logout from your account?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () {
               Provider.of<AuthViewModel>(context, listen: false).logout();
               Navigator.pop(context);
@@ -691,7 +822,10 @@ class StatisticsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Task Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Task Analytics',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -717,13 +851,20 @@ class StatisticsPage extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
-                side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+                side: BorderSide(
+                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    Text('Status Distribution', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Status Distribution',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     SizedBox(
                       height: 200,
@@ -735,17 +876,25 @@ class StatisticsPage extends StatelessWidget {
                                 sections: [
                                   PieChartSectionData(
                                     value: vm.completedCount.toDouble(),
-                                    title: '${((vm.completedCount / vm.totalTodos) * 100).toStringAsFixed(0)}%',
+                                    title:
+                                        '${((vm.completedCount / vm.totalTodos) * 100).toStringAsFixed(0)}%',
                                     color: Colors.green,
                                     radius: 60,
-                                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                    titleStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                   PieChartSectionData(
                                     value: vm.pendingCount.toDouble(),
-                                    title: '${((vm.pendingCount / vm.totalTodos) * 100).toStringAsFixed(0)}%',
+                                    title:
+                                        '${((vm.pendingCount / vm.totalTodos) * 100).toStringAsFixed(0)}%',
                                     color: Colors.orange,
                                     radius: 60,
-                                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                    titleStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -754,7 +903,11 @@ class StatisticsPage extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.pie_chart_outline, size: 56, color: theme.disabledColor),
+                                  Icon(
+                                    Icons.pie_chart_outline,
+                                    size: 56,
+                                    color: theme.disabledColor,
+                                  ),
                                   const SizedBox(height: 8),
                                   const Text('No task data to display'),
                                 ],
@@ -780,7 +933,9 @@ class StatisticsPage extends StatelessWidget {
             // ===== COMPLETION PROGRESS =====
             Text(
               'Goal Progress',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
@@ -794,10 +949,17 @@ class StatisticsPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Overall Completion', style: TextStyle(fontWeight: FontWeight.w500)),
+                      const Text(
+                        'Overall Completion',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
                       Text(
                         '${vm.completionRate.toStringAsFixed(1)}%',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary, fontSize: 18),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.primary,
+                          fontSize: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -831,7 +993,14 @@ class StatisticsPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 4),
           Text(
             value.toString(),
@@ -843,15 +1012,15 @@ class StatisticsPage extends StatelessWidget {
   }
 
   Widget _legendDot(Color color, String label) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+      const SizedBox(width: 8),
+      Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+    ],
+  );
 }
