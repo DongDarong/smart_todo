@@ -17,15 +17,29 @@ import 'views/todo/home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Initialize Firebase and notifications, but don't crash the app on failure.
+  bool firebaseInitialized = true;
+  String? initError;
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  // Initialize local notifications
-  await NotificationService.init();
+    // Initialize local notifications
+    await NotificationService.init();
+  } catch (e, st) {
+    firebaseInitialized = false;
+    initError = e.toString();
+    // Print to logs so adb logcat can show the failure
+    // ignore: avoid_print
+    print('Firebase/Notification init error: $e\n$st');
+  }
 
-  runApp(const MyApp());
+  if (firebaseInitialized) {
+    runApp(const MyApp());
+  } else {
+    runApp(ErrorApp(message: initError ?? 'Initialization failed'));
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -80,5 +94,31 @@ class AuthWrapper extends StatelessWidget {
 
     // Otherwise → Login
     return const LoginPage();
+  }
+}
+
+class ErrorApp extends StatelessWidget {
+  final String message;
+  const ErrorApp({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Initialization Error'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Text(
+              message,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

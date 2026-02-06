@@ -60,4 +60,5 @@ class DefaultFirebaseOptions {
     authDomain: 'smart-todo-2026.firebaseapp.com',
     storageBucket: 'smart-todo-2026.firebasestorage.app',
   );
+
 }
