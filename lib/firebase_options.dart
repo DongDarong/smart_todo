@@ -65,5 +65,4 @@ class DefaultFirebaseOptions {
     projectId: 'smart-todo-2026',
     storageBucket: 'smart-todo-2026.firebasestorage.app',
   );
-
 }

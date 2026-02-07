@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodels/todo_viewmodel.dart';
-import '../../viewmodels/auth_viewmodel.dart';
-import '../../viewmodels/theme_viewmodel.dart';
 import '../../data/models/todo_model.dart';
+import '../notepad/notepad_list_widget.dart';
+import '../settings/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   final String uid;
@@ -15,179 +15,315 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  late TabController _mainTabController; // Todo List vs Notepad
+  late TabController _todoTabController; // Today, Upcoming, etc.
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
+  final GlobalKey<NotepadListWidgetState> _notepadKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
+    _mainTabController = TabController(length: 2, vsync: this);
+    _todoTabController = TabController(length: 4, vsync: this);
     Future.microtask(() {
       Provider.of<TodoViewModel>(context, listen: false).loadTodos(widget.uid);
     });
   }
 
+
   @override
   void dispose() {
     _searchController.dispose();
+    _mainTabController.dispose();
+    _todoTabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TodoViewModel>(context);
-    final themeVM = Provider.of<ThemeViewModel>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 600;
 
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        extendBodyBehindAppBar: false,
-        appBar: AppBar(
-          title: _isSearching
-              ? TextField(
-                  controller: _searchController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: 'Search todos...',
-                    border: InputBorder.none,
-                    prefixIcon: const Icon(Icons.search),
-                    hintStyle: TextStyle(color: theme.hintColor),
-                  ),
-                  style: const TextStyle(fontSize: 16),
-                  onChanged: (v) => vm.setSearchQuery(v),
-                )
-              : const Text(
-                  'Smart Todo',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+    return Scaffold(
+      extendBodyBehindAppBar: false,
+      appBar: AppBar(
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Search todos...',
+                  border: InputBorder.none,
+                  prefixIcon: const Icon(Icons.search),
+                  hintStyle: TextStyle(color: theme.hintColor),
+                  isDense: true,
                 ),
-          actions: [
+                style: TextStyle(fontSize: isSmallScreen ? 14 : 16),
+                onChanged: (v) => vm.setSearchQuery(v),
+              )
+            : Text(
+                'Memoro',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: isSmallScreen ? 18 : 20,
+                ),
+              ),
+        actions: [
+          if (!_isSearching)
             IconButton(
-              icon: Icon(_isSearching ? Icons.close : Icons.search),
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() => _isSearching = true);
+              },
+            ),
+          if (_isSearching)
+            IconButton(
+              icon: const Icon(Icons.close),
               onPressed: () {
                 setState(() {
-                  if (_isSearching) {
-                    _searchController.clear();
-                    vm.setSearchQuery('');
-                  }
-                  _isSearching = !_isSearching;
+                  _isSearching = false;
+                  _searchController.clear();
+                  vm.setSearchQuery('');
                 });
               },
             ),
-            IconButton(
-              icon: Icon(themeVM.isDark ? Icons.light_mode : Icons.dark_mode),
-              onPressed: () => themeVM.toggleDarkMode(),
-            ),
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () => _showFilterSheet(context, vm),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => _confirmLogout(context),
-            ),
-          ],
-          bottom: const TabBar(
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            indicatorSize: TabBarIndicatorSize.label,
-            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-            tabs: [
-              Tab(text: 'Today'),
-              Tab(text: 'Upcoming'),
-              Tab(text: 'Completed'),
-              Tab(text: 'Overdue'),
-            ],
-          ),
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                colorScheme.surface,
-                colorScheme.primaryContainer.withOpacity(0.1),
-              ],
-            ),
-          ),
-          child: Column(
-            children: [
-              // Active filters / search chips
-              if (vm.searchQuery.isNotEmpty ||
-                  vm.statusFilter != TodoStatusFilter.all ||
-                  vm.priorityFilters.isNotEmpty ||
-                  vm.dateFrom != null ||
-                  vm.dateTo != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        if (vm.searchQuery.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Chip(
-                              label: Text('Search: "${vm.searchQuery}"'),
-                              onDeleted: () => vm.setSearchQuery(''),
-                            ),
-                          ),
-                        if (vm.statusFilter != TodoStatusFilter.all)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Chip(
-                              label: Text(
-                                vm.statusFilter == TodoStatusFilter.completed
-                                    ? 'Status: Completed'
-                                    : 'Status: Pending',
-                              ),
-                              onDeleted: () =>
-                                  vm.setStatusFilter(TodoStatusFilter.all),
-                            ),
-                          ),
-                        if (vm.priorityFilters.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Chip(
-                              label: Text(
-                                'Priority: ${vm.priorityFilters.join(', ')}',
-                              ),
-                              onDeleted: () => vm.setPriorityFilters({}),
-                            ),
-                          ),
-                        ActionChip(
-                          avatar: const Icon(Icons.clear_all, size: 18),
-                          label: const Text('Clear All'),
-                          onPressed: vm.clearFilters,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              Expanded(
-                child: TabBarView(
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'filter') {
+                _showFilterSheet(context, vm);
+              } else if (value == 'refresh') {
+                _refreshTodos(context, vm);
+              } else if (value == 'settings') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => SettingsPage(uid: widget.uid)),
+                );
+              }
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'filter',
+                child: Row(
                   children: [
-                    _buildTodoList(vm.applyFilters(vm.todayTodos), vm),
-                    _buildTodoList(vm.applyFilters(vm.upcomingTodos), vm),
-                    _buildTodoList(vm.applyFilters(vm.completedTodos), vm),
-                    _buildTodoList(vm.applyFilters(vm.overdueTodos), vm),
+                    Icon(Icons.filter_list, size: 20),
+                    SizedBox(width: 12),
+                    Text('Filter'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'refresh',
+                child: Row(
+                  children: [
+                    Icon(Icons.refresh, size: 20),
+                    SizedBox(width: 12),
+                    Text('Reload'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'settings',
+                child: Row(
+                  children: [
+                    Icon(Icons.settings, size: 20),
+                    SizedBox(width: 12),
+                    Text('Settings'),
                   ],
                 ),
               ),
             ],
           ),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colorScheme.surface,
+              colorScheme.primaryContainer.withOpacity(0.1),
+            ],
+          ),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _showAddTodoDialog(context, vm),
-          label: const Text('New Task'),
-          icon: const Icon(Icons.add),
+        child: Column(
+          children: [
+            // Top-level tabs: Todo List vs Notepad
+            TabBar(
+              controller: _mainTabController,
+              isScrollable: false,
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelStyle: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: isSmallScreen ? 13 : 14,
+              ),
+              tabs: const [
+                Tab(text: 'Todo List'),
+                Tab(text: 'Notepad'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _mainTabController,
+                children: [
+                  // ============ TODO LIST TAB ============
+                  Column(
+                    children: [
+                      // Sub-tabs for Todo List
+                      TabBar(
+                        controller: _todoTabController,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: isSmallScreen ? 12 : 13,
+                        ),
+                        tabs: const [
+                          Tab(text: 'Today'),
+                          Tab(text: 'Upcoming'),
+                          Tab(text: 'Completed'),
+                          Tab(text: 'Overdue'),
+                        ],
+                      ),
+                      // Active filters display
+                      if (vm.searchQuery.isNotEmpty ||
+                          vm.statusFilter != TodoStatusFilter.all ||
+                          vm.priorityFilters.isNotEmpty ||
+                          vm.dateFrom != null ||
+                          vm.dateTo != null)
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 12 : 16,
+                            vertical: 8,
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                if (vm.searchQuery.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Chip(
+                                      label: Text(
+                                        'Search: "${vm.searchQuery}"',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 13,
+                                        ),
+                                      ),
+                                      onDeleted: () => vm.setSearchQuery(''),
+                                    ),
+                                  ),
+                                if (vm.statusFilter != TodoStatusFilter.all)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Chip(
+                                      label: Text(
+                                        vm.statusFilter ==
+                                                TodoStatusFilter.completed
+                                            ? 'Status: Completed'
+                                            : 'Status: Pending',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 13,
+                                        ),
+                                      ),
+                                      onDeleted: () =>
+                                          vm.setStatusFilter(TodoStatusFilter.all),
+                                    ),
+                                  ),
+                                if (vm.priorityFilters.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Chip(
+                                      label: Text(
+                                        'Priority: ${vm.priorityFilters.join(', ')}',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 13,
+                                        ),
+                                      ),
+                                      onDeleted: () => vm.setPriorityFilters({}),
+                                    ),
+                                  ),
+                                ActionChip(
+                                  avatar:
+                                      Icon(Icons.clear_all, size: isSmallScreen ? 16 : 18),
+                                  label: Text(
+                                    'Clear All',
+                                    style: TextStyle(
+                                      fontSize: isSmallScreen ? 12 : 13,
+                                    ),
+                                  ),
+                                  onPressed: vm.clearFilters,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      // Todo List TabBarView
+                      Expanded(
+                        child: TabBarView(
+                          controller: _todoTabController,
+                          children: [
+                            _buildTodoList(
+                                vm.applyFilters(vm.todayTodos), vm, isSmallScreen),
+                            _buildTodoList(
+                                vm.applyFilters(vm.upcomingTodos), vm, isSmallScreen),
+                            _buildTodoList(
+                                vm.applyFilters(vm.completedTodos), vm, isSmallScreen),
+                            _buildTodoList(
+                                vm.applyFilters(vm.overdueTodos), vm, isSmallScreen),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ============ NOTEPAD TAB ============
+                  NotepadListWidget(
+                    key: _notepadKey,
+                    uid: widget.uid,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
+      ),
+      floatingActionButton: _mainTabController.index == 0
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                final vm = Provider.of<TodoViewModel>(context, listen: false);
+                _showAddTodoDialog(context, vm);
+              },
+              label: const Text('New Task'),
+              icon: const Icon(Icons.add),
+            )
+          : FloatingActionButton.extended(
+              onPressed: () => _notepadKey.currentState?.addNote(),
+              label: const Text('New Note'),
+              icon: const Icon(Icons.add),
+            ),
+    );
+  }
+
+  Future<void> _refreshTodos(BuildContext context, TodoViewModel vm) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Reloading tasks...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+    await vm.loadTodos(widget.uid);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Tasks reloaded'),
+        duration: Duration(seconds: 1),
       ),
     );
   }
@@ -195,26 +331,29 @@ class _HomePageState extends State<HomePage> {
   // =========================================================
   // TODO LIST
   // =========================================================
-  Widget _buildTodoList(List<TodoModel> list, TodoViewModel vm) {
+  Widget _buildTodoList(List<TodoModel> list, TodoViewModel vm, bool isSmallScreen) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final screenSize = MediaQuery.of(context).size;
+    final cardMargin = isSmallScreen ? 12.0 : 16.0;
+    final cardPadding = isSmallScreen ? 8.0 : 12.0;
 
     if (list.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 24 : 40),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
                 decoration: BoxDecoration(
                   color: colorScheme.primary.withOpacity(0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.inbox_outlined,
-                  size: 64,
+                  size: isSmallScreen ? 48 : 64,
                   color: colorScheme.primary.withOpacity(0.5),
                 ),
               ),
@@ -223,6 +362,7 @@ class _HomePageState extends State<HomePage> {
                 'No tasks found',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  fontSize: isSmallScreen ? 16 : 18,
                 ),
               ),
               const SizedBox(height: 8),
@@ -231,6 +371,7 @@ class _HomePageState extends State<HomePage> {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
+                  fontSize: isSmallScreen ? 13 : 14,
                 ),
               ),
             ],
@@ -242,7 +383,10 @@ class _HomePageState extends State<HomePage> {
     final sorted = vm.sortByPriority(list);
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: EdgeInsets.symmetric(
+        vertical: isSmallScreen ? 8 : 12,
+        horizontal: isSmallScreen ? 8 : 0,
+      ),
       itemCount: sorted.length,
       itemBuilder: (_, index) {
         final todo = sorted[index];
@@ -254,25 +398,31 @@ class _HomePageState extends State<HomePage> {
 
         return Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
+            constraints: BoxConstraints(
+              maxWidth: isSmallScreen ? screenSize.width - 16 : 800,
+            ),
             child: Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              margin: EdgeInsets.symmetric(
+                horizontal: cardMargin,
+                vertical: 4,
+              ),
               elevation: 0,
               color: colorScheme.surface,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 20),
                 side: BorderSide(
                   color: colorScheme.outlineVariant.withOpacity(0.5),
                 ),
               ),
               child: InkWell(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 20),
                 onTap: () => _showEditTodoDialog(context, vm, todo),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: EdgeInsets.symmetric(vertical: cardPadding),
                   child: ListTile(
+                    dense: isSmallScreen,
                     leading: Transform.scale(
-                      scale: 1.2,
+                      scale: isSmallScreen ? 1.0 : 1.2,
                       child: Checkbox(
                         value: todo.isDone,
                         shape: RoundedRectangleBorder(
@@ -283,6 +433,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                     title: Text(
                       todo.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         decoration: todo.isDone
                             ? TextDecoration.lineThrough
@@ -293,7 +445,7 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: todo.priority == 3
                             ? FontWeight.bold
                             : FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: isSmallScreen ? 14 : 16,
                       ),
                     ),
                     subtitle: Padding(
@@ -307,74 +459,104 @@ class _HomePageState extends State<HomePage> {
                               todo.description!,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
+                                fontSize: isSmallScreen ? 12 : 13,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
                           ],
-                          Row(
-                            children: [
-                              if (todo.dueDate != null) ...[
-                                Icon(
-                                  Icons.calendar_today_outlined,
-                                  size: 14,
-                                  color: colorScheme.onSurfaceVariant,
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                if (todo.dueDate != null) ...[
+                                  Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: isSmallScreen ? 12 : 14,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    todo.dueDate!
+                                        .toLocal()
+                                        .toString()
+                                        .split(' ')[0],
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      fontSize: isSmallScreen ? 11 : 12,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: priorityColor,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 3),
                                 Text(
-                                  todo.dueDate!.toLocal().toString().split(
-                                    ' ',
-                                  )[0],
-                                  style: theme.textTheme.bodySmall,
+                                  todo.priority == 1
+                                      ? 'Low'
+                                      : todo.priority == 2
+                                      ? 'Med'
+                                      : 'High',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontSize: isSmallScreen ? 11 : 12,
+                                  ),
                                 ),
-                                const SizedBox(width: 12),
+                                if (todo.reminderTime != null) ...[
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.alarm_outlined,
+                                    size: isSmallScreen ? 12 : 14,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: isSmallScreen ? 120 : 180,
+                                    ),
+                                    child: Text(
+                                      todo.reminderTime!
+                                          .toLocal()
+                                          .toString()
+                                          .substring(0, 16),
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        fontSize: isSmallScreen ? 10 : 11,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ],
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: priorityColor,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                todo.priority == 1
-                                    ? 'Low'
-                                    : todo.priority == 2
-                                    ? 'Medium'
-                                    : 'High',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                              if (todo.reminderTime != null) ...[
-                                const SizedBox(width: 12),
-                                const Icon(Icons.alarm_outlined, size: 14),
-                                const SizedBox(width: 4),
-                                Text(
-                                  todo.reminderTime!.toLocal().toString(),
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                              ],
-                            ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    trailing: PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          _showEditTodoDialog(context, vm, todo);
-                        } else if (value == 'delete') {
-                          _confirmDelete(context, vm, todo.id);
-                        }
-                      },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        PopupMenuItem(value: 'delete', child: Text('Delete')),
-                      ],
-                    ),
+                    trailing: isSmallScreen
+                        ? null
+                        : PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showEditTodoDialog(context, vm, todo);
+                              } else if (value == 'delete') {
+                                _confirmDelete(context, vm, todo.id);
+                              }
+                            },
+                            itemBuilder: (_) => const [
+                              PopupMenuItem(
+                                  value: 'edit', child: Text('Edit')),
+                              PopupMenuItem(
+                                  value: 'delete', child: Text('Delete')),
+                            ],
+                          ),
+                    onLongPress: isSmallScreen
+                        ? () => _confirmDelete(context, vm, todo.id)
+                        : null,
                   ),
                 ),
               ),
@@ -394,147 +576,179 @@ class _HomePageState extends State<HomePage> {
     DateTime? dueDate;
     DateTime? reminderTime;
     int priority = 2;
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     showDialog(
       context: context,
       builder: (_) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
+        builder: (context, setDialogState) => Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(isSmallScreen ? 16 : 24),
           ),
-          title: const Text(
-            'New Task',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Task Title',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'New Task',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isSmallScreen ? 18 : 20,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: descriptionController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: 'Task Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    style: TextStyle(fontSize: isSmallScreen ? 14 : 15),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: priority,
-                decoration: InputDecoration(
-                  labelText: 'Priority',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'Description (optional)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    style: TextStyle(fontSize: isSmallScreen ? 13 : 14),
                   ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 1, child: Text('Low')),
-                  DropdownMenuItem(value: 2, child: Text('Medium')),
-                  DropdownMenuItem(value: 3, child: Text('High')),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<int>(
+                    value: priority,
+                    decoration: InputDecoration(
+                      labelText: 'Priority',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 1, child: Text('Low')),
+                      DropdownMenuItem(value: 2, child: Text('Medium')),
+                      DropdownMenuItem(value: 3, child: Text('High')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setDialogState(() => priority = v);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 10 : 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: Icon(Icons.calendar_today_outlined, size: isSmallScreen ? 18 : 20),
+                      label: Text(
+                        dueDate == null
+                            ? 'Set Due Date'
+                            : dueDate!.toLocal().toString().split(' ')[0],
+                        style: TextStyle(fontSize: isSmallScreen ? 13 : 14),
+                      ),
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                          initialDate: DateTime.now(),
+                        );
+                        if (picked != null) setDialogState(() => dueDate = picked);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 10 : 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: Icon(Icons.alarm_outlined, size: isSmallScreen ? 18 : 20),
+                      label: Text(
+                        reminderTime == null
+                            ? 'Set Reminder'
+                            : reminderTime!.toLocal().toString().substring(0, 16),
+                        style: TextStyle(fontSize: isSmallScreen ? 13 : 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onPressed: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                          initialDate: DateTime.now(),
+                        );
+                        if (pickedDate == null) return;
+                        final pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(DateTime.now()),
+                        );
+                        if (pickedTime == null) return;
+                        final combined = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
+                        setDialogState(() => reminderTime = combined);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () {
+                          if (controller.text.trim().isNotEmpty) {
+                            vm.addTodo(
+                              controller.text.trim(),
+                              widget.uid,
+                              description: descriptionController.text.trim().isEmpty
+                                  ? null
+                                  : descriptionController.text.trim(),
+                              dueDate: dueDate,
+                              reminderTime: reminderTime,
+                              priority: priority,
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text('Create Task'),
+                      ),
+                    ],
+                  ),
                 ],
-                onChanged: (v) {
-                  if (v != null) setDialogState(() => priority = v);
-                },
               ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.calendar_today_outlined),
-                label: Text(
-                  dueDate == null
-                      ? 'Set Due Date'
-                      : dueDate!.toLocal().toString().split(' ')[0],
-                ),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2100),
-                    initialDate: DateTime.now(),
-                  );
-                  if (picked != null) setDialogState(() => dueDate = picked);
-                },
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.alarm_outlined),
-                label: Text(
-                  reminderTime == null
-                      ? 'Set Reminder'
-                      : reminderTime!.toLocal().toString(),
-                ),
-                onPressed: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2100),
-                    initialDate: DateTime.now(),
-                  );
-                  if (pickedDate == null) return;
-                  final pickedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.fromDateTime(DateTime.now()),
-                  );
-                  if (pickedTime == null) return;
-                  final combined = DateTime(
-                    pickedDate.year,
-                    pickedDate.month,
-                    pickedDate.day,
-                    pickedTime.hour,
-                    pickedTime.minute,
-                  );
-                  setDialogState(() => reminderTime = combined);
-                },
-              ),
-            ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (controller.text.trim().isNotEmpty) {
-                  vm.addTodo(
-                    controller.text.trim(),
-                    widget.uid,
-                    description: descriptionController.text.trim().isEmpty
-                        ? null
-                        : descriptionController.text.trim(),
-                    dueDate: dueDate,
-                    reminderTime: reminderTime,
-                    priority: priority,
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Create Task'),
-            ),
-          ],
         ),
       ),
     );
@@ -557,149 +771,181 @@ class _HomePageState extends State<HomePage> {
     DateTime? dueDate = todo.dueDate;
     DateTime? reminderTime = todo.reminderTime;
     int priority = todo.priority;
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     showDialog(
       context: context,
       builder: (_) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
+        builder: (context, setDialogState) => Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(isSmallScreen ? 16 : 24),
           ),
-          title: const Text(
-            'Edit Task',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  labelText: 'Task Title',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: descriptionController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: priority,
-                decoration: InputDecoration(
-                  labelText: 'Priority',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 1, child: Text('Low')),
-                  DropdownMenuItem(value: 2, child: Text('Medium')),
-                  DropdownMenuItem(value: 3, child: Text('High')),
-                ],
-                onChanged: (v) {
-                  if (v != null) setDialogState(() => priority = v);
-                },
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.calendar_today_outlined),
-                label: Text(
-                  dueDate == null
-                      ? 'Set Due Date'
-                      : dueDate!.toLocal().toString().split(' ')[0],
-                ),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                    initialDate: dueDate ?? DateTime.now(),
-                  );
-                  if (picked != null) setDialogState(() => dueDate = picked);
-                },
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.alarm_outlined),
-                label: Text(
-                  reminderTime == null
-                      ? 'Set Reminder'
-                      : reminderTime!.toLocal().toString(),
-                ),
-                onPressed: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                    initialDate: reminderTime ?? DateTime.now(),
-                  );
-                  if (pickedDate == null) return;
-                  final pickedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.fromDateTime(
-                      reminderTime ?? DateTime.now(),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Edit Task',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isSmallScreen ? 18 : 20,
                     ),
-                  );
-                  if (pickedTime == null) return;
-                  final combined = DateTime(
-                    pickedDate.year,
-                    pickedDate.month,
-                    pickedDate.day,
-                    pickedTime.hour,
-                    pickedTime.minute,
-                  );
-                  setDialogState(() => reminderTime = combined);
-                },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      labelText: 'Task Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    style: TextStyle(fontSize: isSmallScreen ? 14 : 15),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'Description (optional)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    style: TextStyle(fontSize: isSmallScreen ? 13 : 14),
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<int>(
+                    value: priority,
+                    decoration: InputDecoration(
+                      labelText: 'Priority',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 1, child: Text('Low')),
+                      DropdownMenuItem(value: 2, child: Text('Medium')),
+                      DropdownMenuItem(value: 3, child: Text('High')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setDialogState(() => priority = v);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 10 : 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: Icon(Icons.calendar_today_outlined, size: isSmallScreen ? 18 : 20),
+                      label: Text(
+                        dueDate == null
+                            ? 'Set Due Date'
+                            : dueDate!.toLocal().toString().split(' ')[0],
+                        style: TextStyle(fontSize: isSmallScreen ? 13 : 14),
+                      ),
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                          initialDate: dueDate ?? DateTime.now(),
+                        );
+                        if (picked != null) setDialogState(() => dueDate = picked);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 10 : 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: Icon(Icons.alarm_outlined, size: isSmallScreen ? 18 : 20),
+                      label: Text(
+                        reminderTime == null
+                            ? 'Set Reminder'
+                            : reminderTime!.toLocal().toString().substring(0, 16),
+                        style: TextStyle(fontSize: isSmallScreen ? 13 : 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onPressed: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                          initialDate: reminderTime ?? DateTime.now(),
+                        );
+                        if (pickedDate == null) return;
+                        final pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(
+                            reminderTime ?? DateTime.now(),
+                          ),
+                        );
+                        if (pickedTime == null) return;
+                        final combined = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
+                        setDialogState(() => reminderTime = combined);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () {
+                          if (controller.text.trim().isNotEmpty) {
+                            vm.editTodo(
+                              todo,
+                              widget.uid,
+                              newTitle: controller.text.trim(),
+                              newDescription: descriptionController.text.trim().isEmpty
+                                  ? null
+                                  : descriptionController.text.trim(),
+                              newDueDate: dueDate,
+                              newReminderTime: reminderTime,
+                              newPriority: priority,
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text('Save Changes'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (controller.text.trim().isNotEmpty) {
-                  vm.editTodo(
-                    todo,
-                    widget.uid,
-                    newTitle: controller.text.trim(),
-                    newDescription: descriptionController.text.trim().isEmpty
-                        ? null
-                        : descriptionController.text.trim(),
-                    newDueDate: dueDate,
-                    newReminderTime: reminderTime,
-                    newPriority: priority,
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Save Changes'),
-            ),
-          ],
         ),
       ),
     );
@@ -907,34 +1153,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // =========================================================
-  // LOGOUT CONFIRM
+  // LOGOUT CONFIRM (moved to SettingsPage)
   // =========================================================
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Logout'),
-        content: const Text(
-          'Are you sure you want to logout from your account?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () {
-              Provider.of<AuthViewModel>(context, listen: false).logout();
-              Navigator.pop(context);
-            },
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

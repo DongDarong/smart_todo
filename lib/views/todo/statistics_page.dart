@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (v) => vm.setSearchQuery(v),
                 )
               : const Text(
-                  'Smart Todo',
+                  'Memoro',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
           actions: [

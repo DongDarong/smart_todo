@@ -10,7 +10,7 @@ Smart Todo is an offline-first, cross-platform todo application built with **Flu
 - **Offline-first local storage** using SQLite (`sqflite`) with seamless cloud sync.
 - **Cloud sync with conflict resolution** — timestamp-based merge (latest-write-wins), pending delete queue, bidirectional sync.
 - **Auto-sync on connectivity return** — listens for network changes and syncs automatically when online.
-- **Task management**: add, edit, delete, set due date, set priority, set reminders, toggle complete.
+  - **Task management**: add, edit, delete, set title, description, due date, priority, and reminders. Toggle complete/incomplete.
 - **Scheduled reminders** with persistent notifications — reminders reschedule on app launch even after crashes.
 - **Filtering & search**: by status, date range, priority, and full-text search.
 - **Statistics** view with totals and completion progress.
@@ -84,6 +84,7 @@ Example usage in UI:
 await todoViewModel.addTodo(
   'Meeting at 3 PM',
   uid,
+  description: 'Discuss Q1 roadmap and priorities',
   reminderTime: DateTime.now().add(Duration(hours: 2)),
 );
 
@@ -91,6 +92,7 @@ await todoViewModel.addTodo(
 await todoViewModel.editTodo(
   todo,
   uid,
+  newDescription: 'Updated: Include budget review',
   newReminderTime: DateTime.now().add(Duration(hours: 1)),
 );
 
@@ -132,8 +134,8 @@ void dispose() {
 ### Available Methods
 
 - `loadTodos(String uid)` — Load todos, reschedule reminders.
-- `addTodo(String title, String uid, {DateTime? dueDate, DateTime? reminderTime, int priority})` — Create todo with optional reminder.
-- `editTodo(TodoModel todo, String uid, {String? newTitle, DateTime? newDueDate, int? newPriority, DateTime? newReminderTime})` — Update todo and/or reminder.
+- `addTodo(String title, String uid, {String? description, DateTime? dueDate, DateTime? reminderTime, int priority})` — Create todo with optional description and reminder.
+- `editTodo(TodoModel todo, String uid, {String? newTitle, String? newDescription, DateTime? newDueDate, int? newPriority, DateTime? newReminderTime})` — Update todo properties including description and reminder.
 - `toggleDone(TodoModel todo, String uid)` — Mark complete/incomplete.
 - `deleteTodo(String id, String uid)` — Delete (cancels notification).
 - `syncIfOnline(String uid)` — Manual sync trigger.
@@ -160,6 +162,23 @@ flutter run
 ```
 
 > **Note**: See [REMINDERS_GUIDE.md](REMINDERS_GUIDE.md) for a detailed guide on using offline sync, conflict resolution, and scheduled reminders.
+
+## Tools & CLI 🛠️
+
+- **Flutter SDK** (stable) and **Dart SDK** — required to build and run the app.
+- **FlutterFire CLI** (`flutterfire`) — helps configure Firebase platforms:
+  ```bash
+  dart pub global activate flutterfire_cli
+  flutterfire configure
+  ```
+- Useful commands:
+  - `flutter pub get` — install dependencies
+  - `dart format .` — format code
+  - `flutter analyze` — static analysis
+  - `flutter run` — run on device/emulator
+  - `flutter build apk --release` — build Android release APK
+
+Ensure your PATH includes the pub cache binaries (e.g. `%USERPROFILE%\\.pub-cache\\bin`) so `flutterfire` is available.
 
 Building:
 
