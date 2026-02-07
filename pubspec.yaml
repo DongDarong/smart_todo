@@ -46,6 +46,7 @@ dependencies:
   fl_chart: ^0.66.2
   shared_preferences: ^2.1.0
   flutter_secure_storage: ^5.0.2
+  google_sign_in: ^6.1.0
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_test:

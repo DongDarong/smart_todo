@@ -156,8 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          HomePage(uid: authVM.uid!),
+                                      builder: (_) => HomePage(uid: authVM.uid!),
                                     ),
                                   );
                                 } else {
@@ -178,6 +177,32 @@ class _LoginPageState extends State<LoginPage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.login),
+                              label: const Text('Continue with Google'),
+                              onPressed: () async {
+                                final error = await authVM.signInWithGoogle();
+                                if (error == null && authVM.uid != null) {
+                                  if (!mounted) return;
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => HomePage(uid: authVM.uid!),
+                                    ),
+                                  );
+                                } else {
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      content: Text(error ?? 'Google sign-in failed'),
+                                      backgroundColor: colorScheme.error,
+                                    ),
+                                  );
+                                }
+                              },
                             ),
                           ],
                         ),

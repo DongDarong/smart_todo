@@ -195,6 +195,20 @@ Building:
 
 > Note: If you already have `lib/firebase_options.dart`, ensure it matches your Firebase project.
 
+### Google Sign-In
+
+Memoro supports signing in with Google accounts. For full platform configuration instructions (Web, Android, iOS) and troubleshooting steps, see the dedicated guide:
+
+- [PLATFORM_GOOGLE_SIGNIN.md](PLATFORM_GOOGLE_SIGNIN.md)
+
+Quick summary:
+
+- Enable the Google provider in Firebase Console → Authentication → Sign-in method.
+- Add `localhost` to Authorized domains for web testing.
+- Register Android SHA-1/SHA-256 fingerprints in Firebase and update `android/app/google-services.json`.
+- Download updated `GoogleService-Info.plist` for iOS and add to `ios/Runner`.
+
+
 ### Local notifications
 
 - Android requires manifest permission entries and a notification channel (already referenced in `lib/core/notification_service.dart`).

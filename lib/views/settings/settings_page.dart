@@ -175,6 +175,75 @@ class SettingsPage extends StatelessWidget {
                       trailing: Icon(Icons.arrow_forward, size: isSmallScreen ? 20 : 24),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  // Google Connect / Disconnect
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
+                      side: BorderSide(
+                        color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
+                      ),
+                    ),
+                    color: colorScheme.surface,
+                    child: Consumer<AuthViewModel>(
+                      builder: (context, avm, _) {
+                        final linked = avm.user?.providerData
+                                .any((p) => p.providerId == 'google.com') ==
+                            true;
+                        return ListTile(
+                          dense: isSmallScreen,
+                          leading: Icon(
+                            Icons.account_circle_outlined,
+                            color: colorScheme.primary,
+                            size: isSmallScreen ? 22 : 24,
+                          ),
+                          title: Text(
+                            linked ? 'Google Account Connected' : 'Connect Google Account',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 14 : 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            linked ? (avm.user?.email ?? 'Connected') : 'Link your Google account for quick sign-in',
+                            style: TextStyle(fontSize: isSmallScreen ? 12 : 13),
+                          ),
+                          trailing: FilledButton(
+                            onPressed: () async {
+                              if (linked) {
+                                final err = await avm.unlinkGoogle();
+                                if (err != null) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(err), backgroundColor: colorScheme.error),
+                                  );
+                                } else {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Google unlinked')),
+                                  );
+                                }
+                              } else {
+                                final err = await avm.linkWithGoogle();
+                                if (err != null) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(err), backgroundColor: colorScheme.error),
+                                  );
+                                } else {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Google account linked')),
+                                  );
+                                }
+                              }
+                            },
+                            child: Text(linked ? 'Disconnect' : 'Connect'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
