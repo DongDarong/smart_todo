@@ -198,7 +198,7 @@ class NotepadListWidgetState extends State<NotepadListWidget> {
               Icon(
                 Icons.note_outlined,
                 size: isSmallScreen ? 48 : 64,
-                color: theme.colorScheme.primary.withOpacity(0.5),
+                color: theme.colorScheme.primary.withAlpha((0.5 * 255).round()),
               ),
               const SizedBox(height: 16),
               Text(
@@ -246,7 +246,7 @@ class NotepadListWidgetState extends State<NotepadListWidget> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
                 side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  color: theme.colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                 ),
               ),
               child: InkWell(

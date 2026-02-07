@@ -27,15 +27,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     _mainTabController = TabController(length: 2, vsync: this);
     _todoTabController = TabController(length: 4, vsync: this);
+    // Listen for main tab changes to rebuild FAB with animation
+    _mainTabController.addListener(_onMainTabChanged);
     Future.microtask(() {
       Provider.of<TodoViewModel>(context, listen: false).loadTodos(widget.uid);
     });
+  }
+
+  void _onMainTabChanged() {
+    if (!mounted) return;
+    setState(() {});
   }
 
 
   @override
   void dispose() {
     _searchController.dispose();
+    _mainTabController.removeListener(_onMainTabChanged);
     _mainTabController.dispose();
     _todoTabController.dispose();
     super.dispose();
@@ -148,7 +156,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             end: Alignment.bottomCenter,
             colors: [
               colorScheme.surface,
-              colorScheme.primaryContainer.withOpacity(0.1),
+              colorScheme.primaryContainer.withAlpha((0.1 * 255).round()),
             ],
           ),
         ),
@@ -295,20 +303,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ],
         ),
       ),
-      floatingActionButton: _mainTabController.index == 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                final vm = Provider.of<TodoViewModel>(context, listen: false);
-                _showAddTodoDialog(context, vm);
-              },
-              label: const Text('New Task'),
-              icon: const Icon(Icons.add),
-            )
-          : FloatingActionButton.extended(
-              onPressed: () => _notepadKey.currentState?.addNote(),
-              label: const Text('New Note'),
-              icon: const Icon(Icons.add),
-            ),
+      floatingActionButton: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        switchInCurve: Curves.easeOutBack,
+        switchOutCurve: Curves.easeInBack,
+        transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+        child: _mainTabController.index == 0
+            ? FloatingActionButton.extended(
+                key: const ValueKey('fab_task'),
+                onPressed: () {
+                  final vm = Provider.of<TodoViewModel>(context, listen: false);
+                  _showAddTodoDialog(context, vm);
+                },
+                label: const Text('New Task'),
+                icon: const Icon(Icons.add),
+              )
+            : FloatingActionButton.extended(
+                key: const ValueKey('fab_note'),
+                onPressed: () => _notepadKey.currentState?.addNote(),
+                label: const Text('New Note'),
+                icon: const Icon(Icons.add),
+              ),
+      ),
     );
   }
 
@@ -348,13 +364,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               Container(
                 padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.05),
+                  color: colorScheme.primary.withAlpha((0.05 * 255).round()),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.inbox_outlined,
                   size: isSmallScreen ? 48 : 64,
-                  color: colorScheme.primary.withOpacity(0.5),
+                  color: colorScheme.primary.withAlpha((0.5 * 255).round()),
                 ),
               ),
               const SizedBox(height: 16),
@@ -411,7 +427,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 20),
                 side: BorderSide(
-                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                  color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                 ),
               ),
               child: InkWell(

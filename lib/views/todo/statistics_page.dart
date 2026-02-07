@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
               end: Alignment.bottomCenter,
               colors: [
                 colorScheme.surface,
-                colorScheme.primaryContainer.withOpacity(0.1),
+                colorScheme.primaryContainer.withAlpha((0.1 * 255).round()),
               ],
             ),
           ),
@@ -218,13 +218,13 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.05),
+                  color: colorScheme.primary.withAlpha((0.05 * 255).round()),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.inbox_outlined,
                   size: 64,
-                  color: colorScheme.primary.withOpacity(0.5),
+                  color: colorScheme.primary.withAlpha((0.5 * 255).round()),
                 ),
               ),
               const SizedBox(height: 16),
@@ -271,7 +271,7 @@ class _HomePageState extends State<HomePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                  color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                 ),
               ),
               child: InkWell(
@@ -852,7 +852,7 @@ class StatisticsPage extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
                 side: BorderSide(
-                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                  color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                 ),
               ),
               child: Padding(
@@ -941,7 +941,7 @@ class StatisticsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withOpacity(0.2),
+                color: colorScheme.primaryContainer.withAlpha((0.2 * 255).round()),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -986,9 +986,9 @@ class StatisticsPage extends StatelessWidget {
       width: 100,
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withAlpha((0.08 * 255).round()),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withAlpha((0.2 * 255).round())),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

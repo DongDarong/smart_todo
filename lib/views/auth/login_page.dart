@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              colorScheme.primaryContainer.withOpacity(0.4),
+              colorScheme.primaryContainer.withAlpha((0.4 * 255).round()),
               colorScheme.surface,
             ],
           ),
@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.1),
+                        color: colorScheme.primary.withAlpha((0.1 * 255).round()),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

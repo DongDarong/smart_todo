@@ -32,8 +32,8 @@ class SettingsPage extends StatelessWidget {
             // =================== PROFILE SECTION ===================
             Container(
               padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withOpacity(0.3),
+                decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withAlpha((0.3 * 255).round()),
               ),
               child: Column(
                 children: [
@@ -91,8 +91,8 @@ class SettingsPage extends StatelessWidget {
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
-                      side: BorderSide(
-                        color: colorScheme.outlineVariant.withOpacity(0.5),
+                        side: BorderSide(
+                        color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                       ),
                     ),
                     color: colorScheme.surface,
@@ -146,8 +146,8 @@ class SettingsPage extends StatelessWidget {
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
-                      side: BorderSide(
-                        color: colorScheme.outlineVariant.withOpacity(0.5),
+                        side: BorderSide(
+                      color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                       ),
                     ),
                     color: colorScheme.surface,
@@ -198,8 +198,8 @@ class SettingsPage extends StatelessWidget {
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
-                      side: BorderSide(
-                        color: colorScheme.outlineVariant.withOpacity(0.5),
+                        side: BorderSide(
+                      color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                       ),
                     ),
                     color: colorScheme.surface,
@@ -255,8 +255,8 @@ class SettingsPage extends StatelessWidget {
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
-                      side: BorderSide(
-                        color: colorScheme.outlineVariant.withOpacity(0.5),
+                        side: BorderSide(
+                      color: colorScheme.outlineVariant.withAlpha((0.5 * 255).round()),
                       ),
                     ),
                     color: colorScheme.surface,
