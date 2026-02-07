@@ -1,6 +1,6 @@
-# Smart Todo ✅
+# Memoro ✅
 
-Smart Todo is an offline-first, cross-platform todo application built with **Flutter** and **Dart**. It provides user authentication, local persistence, cloud sync, reminders, and powerful filtering—designed to work on mobile, web, and desktop platforms.
+Memoro is an offline-first, cross-platform todo and note-taking application built with **Flutter** and **Dart**. It provides user authentication, local persistence, cloud sync, reminders, and powerful filtering—designed to work on mobile, web, and desktop platforms.
 
 ---
 
